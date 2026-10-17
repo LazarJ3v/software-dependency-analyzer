@@ -22,17 +22,18 @@ This project is developed as part of the Advanced Databases course at the Univer
 
 - **Backend:** C# and ASP.NET Core Web API
 - **Database:** Neo4j
-- **Frontend:** HTML, CSS, and JavaScript
 - **Vulnerability Data:** OSV API
-- **Graph Visualization:** Cytoscape.js (planned)
 
 ## Project Structure
 
 ```
 software-dependency-analyzer/
-├── backend/
-├── frontend/
+├── sda/
 ├── docs/
 └── README.md
 ```
+- **sda** - software dependency analyzer API
+- **docs** - project documentations 
+- **README.md** - introduction to software dependency analyzer project
+
 *The directory structure will be updated as the project develops.*

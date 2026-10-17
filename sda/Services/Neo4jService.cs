@@ -16,7 +16,8 @@ namespace sda.Services
             _client = new BoltGraphClient(
                 new Uri(config.uri!),
                 config.username,
-                config.password
+                config.password,
+                config.database
             );
         }
 

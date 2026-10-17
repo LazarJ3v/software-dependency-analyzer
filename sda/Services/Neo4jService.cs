@@ -1,4 +1,5 @@
 ﻿using Neo4jClient;
+using Neo4jClient.Cypher;
 using sda.Configurations;
 
 namespace sda.Services
@@ -6,6 +7,7 @@ namespace sda.Services
     public class Neo4jService
     {
         private readonly IGraphClient _client;
+        private readonly string _database;
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
         private bool _isConnected = false;
 
@@ -13,11 +15,12 @@ namespace sda.Services
         {
             config.Validate();
 
+            _database = config.database!;
+
             _client = new BoltGraphClient(
                 new Uri(config.uri!),
                 config.username,
-                config.password,
-                config.database
+                config.password
             );
         }
 
@@ -44,6 +47,12 @@ namespace sda.Services
         {
             await EnsureConnectedAsync();
             return _client;
+        }
+
+        public async Task<ICypherFluentQuery> CypherAsync()
+        {
+            await EnsureConnectedAsync();
+            return _client.Cypher.WithDatabase(_database);
         }
     }
 }

@@ -53,8 +53,7 @@ app.MapGet("/api/neo4j/test", async (Neo4jService neo4jService) =>
 {
     var client = await neo4jService.GetClientAsync();
 
-    var result = await client.Cypher
-        .WithDatabase("a1b2c3d4")
+    var result = await (await neo4jService.CypherAsync())
         .Return(() => new { value = Return.As<int>("1") })
         .ResultsAsync;
 

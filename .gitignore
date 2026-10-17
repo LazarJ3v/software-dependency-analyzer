@@ -1,0 +1,90 @@
+
+# ==============================
+# .NET / ASP.NET Core
+# ==============================
+
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.log
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# Build outputs
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rtifacts/
+[Tt]estResults/
+coverage/
+coverage.*
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# ASP.NET Core secrets and local configuration
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# Environment variables and credentials
+.env
+.env.*
+!.env.example
+
+# ==============================
+# Neo4j
+# ==============================
+
+# Neo4j local database files
+neo4j/data/
+neo4j/logs/
+neo4j/import/
+neo4j/plugins/
+
+# Neo4j database backups
+*.dump
+*.backup
+
+# ==============================
+# Docker
+# ==============================
+
+# Local Docker overrides
+docker-compose.override.yml
+compose.override.yaml
+docker-compose.override.yaml
+
+# ==============================
+# Operating system
+# ==============================
+
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ==============================
+# Temporary files
+# ==============================
+
+*.tmp
+*.temp
+*.bak
+*.swp
+*.orig

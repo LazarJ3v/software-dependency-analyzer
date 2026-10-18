@@ -22,6 +22,8 @@ namespace sda.Services
                 config.username,
                 config.password
             );
+
+            _client.DefaultDatabase = _database;
         }
 
         private async Task EnsureConnectedAsync()
@@ -47,12 +49,6 @@ namespace sda.Services
         {
             await EnsureConnectedAsync();
             return _client;
-        }
-
-        public async Task<ICypherFluentQuery> CypherAsync()
-        {
-            await EnsureConnectedAsync();
-            return _client.Cypher.WithDatabase(_database);
         }
     }
 }

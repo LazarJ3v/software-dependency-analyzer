@@ -49,19 +49,19 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/api/neo4j/test", async (Neo4jService neo4jService) =>
-{
-    var client = await neo4jService.GetClientAsync();
+//app.MapGet("/api/neo4j/test", async (Neo4jService neo4jService) =>
+//{
+//    var client = await neo4jService.GetClientAsync();
 
-    var result = await (await neo4jService.CypherAsync())
-        .Return(() => new { value = Return.As<int>("1") })
-        .ResultsAsync;
+//    var result = client.Cypher
+//        .Return(() => new { value = Return.As<int>("1") })
+//        .ResultsAsync;
 
-    return Results.Ok(new
-    {
-        message = "Neo4j AuraDB konekcija je uspešna!",
-        connected = result.First().value == 1
-    });
-});
+//    return Results.Ok(new
+//    {
+//        message = "Neo4j AuraDB konekcija je uspešna!",
+//        connected = result.First().value == 1
+//    });
+//});
 
 app.Run();

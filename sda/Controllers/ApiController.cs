@@ -38,8 +38,61 @@ namespace sda.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest("greska: " + ex.Message);
+                return BadRequest("[NODE CREATION!] Greska pri kreiranju projekta: " + ex.Message);
             } 
         }
+
+        [HttpPost("package")]
+        public async Task<IActionResult> PostPackage
+            ([FromBody] CreatePackageDto dto)
+        {
+            try
+            {
+                var client = await _neo4j.GetClientAsync();
+                var createdPackage = await client.Cypher
+                    .Create("(p:Package {name: $name, ecosystem: $ecosystem, description: $description})")
+                    .WithParams(new
+                    {
+                        name = dto.name,
+                        ecosystem = dto.ecosystem,
+                        description = dto.description
+                    })
+                    .Return(p => p.As<Package>())
+                    .ResultsAsync;
+
+                return Ok(createdPackage.FirstOrDefault());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("[NODE CREATION!] Greska pri kreiranju paketa: " + ex.Message);
+            }
+        }
+
+        [HttpPost("packageVersion")]
+        public async Task<IActionResult> PostPackageVerson
+            ([FromBody] CreatePackageVersionDto dto)
+        {
+            try
+            {
+                var client = await _neo4j.GetClientAsync();
+                var createdPackageVersion = await client.Cypher
+                    .Create("(pv:PackageVersion {version: $version, publishedAt: $publishedAt, licence: licence})")
+                    .WithParams(new
+                    {
+                        version = dto.version,
+                        publishedAt = dto.publishedAt,
+                        licence = dto.licence
+                    })
+                    .Return(p => p.As<PackageVersion>())
+                    .ResultsAsync;
+
+                return Ok(createdPackageVersion.FirstOrDefault());
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("[NODE CREATION!] Greska pri kreiranju verzije paketa: " + ex.Message);
+            }
+        }
     }
+
 }

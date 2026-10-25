@@ -403,3 +403,121 @@ tbody tr:last-child td {
     overflow-x: auto;
   }
 }
+
+/* Card header + small button */
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.card-head h2 {
+  margin: 0;
+}
+
+.refresh.small {
+  padding: 5px 10px;
+  font-size: 0.8rem;
+}
+
+.dot-new {
+  background: rgba(245, 197, 66, 0.15);
+  color: var(--medium);
+}
+
+/* Modal */
+.modal {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--text);
+  padding: 0;
+  width: min(460px, calc(100vw - 32px));
+}
+
+.modal::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.modal-body {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-body h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.field > span {
+  font-weight: 500;
+}
+
+.field input[type='text'] {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 11px;
+  color: inherit;
+  font: inherit;
+}
+
+.field input[type='text']:disabled {
+  opacity: 0.6;
+}
+
+.field input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.field input[aria-invalid='true'] {
+  border-color: var(--critical);
+}
+
+.field input[type='file'] {
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.field small {
+  color: var(--muted);
+}
+
+.field-error {
+  color: var(--critical);
+  font-style: normal;
+  font-size: 0.82rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.secondary:hover {
+  border-color: #3a4a5f;
+}

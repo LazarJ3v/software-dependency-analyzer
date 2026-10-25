@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { loadDashboardData } from './api/client'
 import { USE_REAL_DATA } from './config'
-import type { DashboardData, Vulnerability } from './types'
+import ProjectModal from './ProjectModal'
+import type { DashboardData, Project, Vulnerability } from './types'
 
 type Severity = 'critical' | 'high' | 'medium' | 'low' | 'unknown'
 
@@ -45,6 +46,13 @@ function PathView({ path }: { path: string[] }) {
 
 function Dashboard({ data }: { data: DashboardData }) {
   const [selectedProject, setSelectedProject] = useState<string | null>(null)
+  // Projekti kreirani u ovoj sesiji; cuvaju se samo u frontendu (nista se ne salje backendu).
+  const [createdProjects, setCreatedProjects] = useState<Project[]>([])
+  const [modalOpen, setModalOpen] = useState(false)
+  const projects = useMemo(
+    () => [...createdProjects, ...data.projects],
+    [createdProjects, data.projects],
+  )
 
   const vulnById = useMemo(() => {
     const map = new Map<number, Vulnerability>()
@@ -82,7 +90,7 @@ function Dashboard({ data }: { data: DashboardData }) {
   return (
     <>
       <section className="stats">
-        <StatCard label="Projekti" value={data.projects.length} />
+        <StatCard label="Projekti" value={projects.length} />
         <StatCard label="Paketi" value={data.packages.length} />
         <StatCard label="Ranjivosti" value={data.vulnerabilities.length} tone="warn" />
         <StatCard label="Kriticne" value={critical} tone="danger" />
@@ -91,12 +99,17 @@ function Dashboard({ data }: { data: DashboardData }) {
 
       <div className="grid">
         <section className="card">
-          <h2>Projekti</h2>
-          {data.projects.length === 0 ? (
+          <div className="card-head">
+            <h2>Projekti</h2>
+            <button className="refresh small" onClick={() => setModalOpen(true)}>
+              + Novi projekat
+            </button>
+          </div>
+          {projects.length === 0 ? (
             <p className="empty">Nema projekata.</p>
           ) : (
             <ul className="project-list">
-              {data.projects.map((p) => {
+              {projects.map((p) => {
                 const name = p.name ?? '(bez imena)'
                 const affected = affectedProjects.has(name)
                 const active = selectedProject === name
@@ -110,10 +123,15 @@ function Dashboard({ data }: { data: DashboardData }) {
                       <span className="project-name">{name}</span>
                       <span className="project-meta">
                         {p.ecosystem ?? '-'} · {formatDate(p.createdAt)}
+                        {p.dependencyCount !== undefined && ` · ${p.dependencyCount} zavisnosti`}
                       </span>
-                      <span className={`dot ${affected ? 'dot-bad' : 'dot-ok'}`}>
-                        {affected ? 'ranjiv' : 'cist'}
-                      </span>
+                      {p.lockFileName ? (
+                        <span className="dot dot-new">nije analiziran</span>
+                      ) : (
+                        <span className={`dot ${affected ? 'dot-bad' : 'dot-ok'}`}>
+                          {affected ? 'ranjiv' : 'cist'}
+                        </span>
+                      )}
                     </button>
                   </li>
                 )
@@ -208,6 +226,16 @@ function Dashboard({ data }: { data: DashboardData }) {
           )}
         </section>
       </div>
+      {modalOpen && (
+        <ProjectModal
+          existingNames={projects.map((p) => p.name ?? '')}
+          onClose={() => setModalOpen(false)}
+          onCreate={(project) => {
+            setCreatedProjects((prev) => [project, ...prev])
+            setModalOpen(false)
+          }}
+        />
+      )}
     </>
   )
 }

@@ -4,6 +4,9 @@ export interface Project {
   name: string | null
   ecosystem: string | null
   createdAt: string
+  // Samo za projekte kreirane u frontendu (iz package-lock.json).
+  lockFileName?: string
+  dependencyCount?: number
 }
 
 export interface Package {

@@ -1,54 +1,51 @@
-﻿using Neo4jClient;
-using Neo4jClient.Cypher;
+﻿using Neo4j.Driver;
 using sda.Configurations;
 
 namespace sda.Services
 {
-    public class Neo4jService
+    public class Neo4jService : IAsyncDisposable
     {
-        private readonly IGraphClient _client;
-        private readonly string _database;
-        private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
-        private bool _isConnected = false;
+        private readonly IDriver _driver;
+        private readonly Neo4jConfiguration _config;
 
         public Neo4jService(Neo4jConfiguration config)
         {
             config.Validate();
+            _config = config;
 
-            _database = config.database!;
-
-            _client = new BoltGraphClient(
-                new Uri(config.uri!),
-                config.username,
-                config.password
-            );
-
-            _client.DefaultDatabase = _database;
+            _driver = GraphDatabase.Driver(
+                config.uri!,
+                AuthTokens.Basic(config.username!, config.password!));
         }
 
-        private async Task EnsureConnectedAsync()
+        public IDriver Driver => _driver;
+
+        public Task VerifyConnectivityAsync() => _driver.VerifyConnectivityAsync();
+
+        // Čitanje: vraća listu zapisa
+        public async Task<IReadOnlyList<IRecord>> ReadAsync(
+            string cypher, Dictionary<string, object>? parameters = null)
         {
-            if (_isConnected) return;
+            var result = await _driver
+                .ExecutableQuery(cypher)
+                .WithParameters(parameters ?? new Dictionary<string, object>())
+                .WithConfig(new QueryConfig(RoutingControl.Readers, database: _config.database))
+                .ExecuteAsync();
 
-            await _connectionLock.WaitAsync();
-            try
-            {
-                if (!_isConnected)
-                {
-                    await _client.ConnectAsync();
-                    _isConnected = true;
-                }
-            }
-            finally
-            {
-                _connectionLock.Release();
-            }
+            return result.Result;
         }
 
-        public async Task<IGraphClient> GetClientAsync()
+        // Upis: vraća broj promena (kreirani čvorovi, veze...)
+        public async Task WriteAsync(
+            string cypher, Dictionary<string, object>? parameters = null)
         {
-            await EnsureConnectedAsync();
-            return _client;
+            await _driver
+                .ExecutableQuery(cypher)
+                .WithParameters(parameters ?? new Dictionary<string, object>())
+                .WithConfig(new QueryConfig(RoutingControl.Writers, database: _config.database))
+                .ExecuteAsync();
         }
+
+        public ValueTask DisposeAsync() => _driver.DisposeAsync();
     }
 }

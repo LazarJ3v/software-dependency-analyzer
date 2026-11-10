@@ -1,23 +1,22 @@
 using DotNetEnv;
-using Neo4j.Driver;
-using Neo4jClient.Cypher;
 using sda.Configurations;
 using sda.Services;
 
-Env.Load(options: new LoadOptions(setEnvVars: true, clobberExistingVars: true));
+// Env.Load(options: new LoadOptions(setEnvVars: true, clobberExistingVars: true));
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-//builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<Neo4jService>();
 builder.Services.AddSingleton(Neo4jConfiguration.Aura);
+builder.Services.AddSingleton<Neo4jService>();
+
+builder.Services.AddSingleton<ProjectService>();
 
 builder.Services.AddCors(options =>
 {
@@ -29,14 +28,18 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Provera konekcije sa Neo4j bazom pri startu aplikacije
+var neo4j = app.Services.GetRequiredService<Neo4jService>();
+await neo4j.VerifyConnectivityAsync();
+app.Logger.LogInformation("Neo4j connection established.");
+
 app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    //app.MapOpenApi();
     app.UseSwagger();
-    app.UseSwaggerUI(options => 
+    app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
         options.RoutePrefix = string.Empty;
@@ -49,19 +52,15 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-//app.MapGet("/api/neo4j/test", async (Neo4jService neo4jService) =>
-//{
-//    var client = await neo4jService.GetClientAsync();
+// app.MapGet("/api/neo4j/test", async (Neo4jService neo4jService) =>
+// {
+//     var records = await neo4jService.ReadAsync("RETURN 1 AS value");
 
-//    var result = client.Cypher
-//        .Return(() => new { value = Return.As<int>("1") })
-//        .ResultsAsync;
-
-//    return Results.Ok(new
-//    {
-//        message = "Neo4j AuraDB konekcija je uspeöna!",
-//        connected = result.First().value == 1
-//    });
-//});
+//     return Results.Ok(new
+//     {
+//         message = "Neo4j AuraDB konekcija je uspe≈°na!",
+//         connected = records[0]["value"].As<int>() == 1
+//     });
+// });
 
 app.Run();

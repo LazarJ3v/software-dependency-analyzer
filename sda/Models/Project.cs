@@ -5,5 +5,6 @@
         public string? name { get; set; }
         public string? ecosystem { get; set; }
         public DateTime createdAt { get; set; }
+        public DateTime updatedAt { get; set; }
     }
 }

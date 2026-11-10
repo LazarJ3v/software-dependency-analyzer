@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Neo4jClient.Cypher;
 using sda.DTOs;
 using sda.Models;
 using sda.Services;
@@ -10,10 +9,10 @@ namespace sda.Controllers
     [Route("[controller]")]
     public class ApiController : ControllerBase
     {
-        private readonly Neo4jService _neo4j;
-        public ApiController(Neo4jService neo4j)
+        private readonly ProjectService _projectService;
+        public ApiController(ProjectService projectService)
         {
-            _neo4j = neo4j;
+            _projectService = projectService;
         }
 
         [HttpPost("project")]
@@ -22,24 +21,41 @@ namespace sda.Controllers
         {
             try
             {
-                var client = await _neo4j.GetClientAsync();
-                var createdProject = await client.Cypher
-                    .Create("(p:Project {name: $name, ecosystem: $ecosystem, createdAt: $createdAt})")
-                    .WithParams(new
-                    {
-                        name = dto.name,
-                        ecosystem = dto.ecosystem,
-                        createdAt = DateTime.Now
-                    })
-                    .Return(p => p.As<Project>())
-                    .ResultsAsync;
-
-                return Ok(createdProject.FirstOrDefault());
+                var project = await _projectService.CreateProject(dto);
+                return Ok(project);
             }
             catch (Exception ex)
             {
                 return BadRequest("[NODE CREATION!] Greska pri kreiranju projekta: " + ex.Message);
             } 
+        }
+
+        [HttpGet("project/{name}")]
+        public async Task<ActionResult> GetProject(string name)
+        {
+            try
+            {
+                var project = await _projectService.ReadProject(name);
+                return Ok(project);
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+        
+        [HttpPut("project")]
+        public async Task<ActionResult> PutProject([FromBody] CreateProjectDto dto)
+        {
+            try
+            {
+                var project = await _projectService.UpdateProject(dto);
+                return Ok(project);
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpPost("package")]
@@ -48,19 +64,7 @@ namespace sda.Controllers
         {
             try
             {
-                var client = await _neo4j.GetClientAsync();
-                var createdPackage = await client.Cypher
-                    .Create("(p:Package {name: $name, ecosystem: $ecosystem, description: $description})")
-                    .WithParams(new
-                    {
-                        name = dto.name,
-                        ecosystem = dto.ecosystem,
-                        description = dto.description
-                    })
-                    .Return(p => p.As<Package>())
-                    .ResultsAsync;
-
-                return Ok(createdPackage.FirstOrDefault());
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -74,19 +78,7 @@ namespace sda.Controllers
         {
             try
             {
-                var client = await _neo4j.GetClientAsync();
-                var createdPackageVersion = await client.Cypher
-                    .Create("(pv:PackageVersion {version: $version, publishedAt: $publishedAt, licence: licence})")
-                    .WithParams(new
-                    {
-                        version = dto.version,
-                        publishedAt = dto.publishedAt,
-                        licence = dto.licence
-                    })
-                    .Return(p => p.As<PackageVersion>())
-                    .ResultsAsync;
-
-                return Ok(createdPackageVersion.FirstOrDefault());
+                return Ok();
             }
             catch (Exception ex)
             {

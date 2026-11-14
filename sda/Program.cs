@@ -17,6 +17,9 @@ builder.Services.AddSingleton(Neo4jConfiguration.Aura);
 builder.Services.AddSingleton<Neo4jService>();
 
 builder.Services.AddSingleton<ProjectService>();
+builder.Services.AddScoped<PackageService>();
+builder.Services.AddScoped<VulnerabilityService>();
+builder.Services.AddScoped<AnalysisService>();
 
 builder.Services.AddCors(options =>
 {

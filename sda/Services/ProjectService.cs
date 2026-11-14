@@ -8,6 +8,7 @@ namespace sda.Services
     {
         private readonly Neo4jService _neo4j;
         public ProjectService(Neo4jService neo4j) => _neo4j = neo4j;
+        #region CRUD
         public async Task<Project> CreateProject(CreateProjectDto dto)
         {
             if (String.IsNullOrWhiteSpace(dto.name))
@@ -15,25 +16,25 @@ namespace sda.Services
 
             if (String.IsNullOrWhiteSpace(dto.ecosystem))
                 throw new ArgumentException("Field \'ecosystem\' is required.");
-            //INFO: test dobija tip EagerResult<IReadOnlyList<IRecord>>? koji ne moze da bude null
+
             var test = await _neo4j.Driver.ExecutableQuery(@"
                 MATCH (p:Project {name: $name})
                 RETURN p
                 ")
-                .WithParameters(new { name = dto.name })
+                .WithParameters(new { dto.name })
                 .ExecuteAsync();
 
-            if (test != null)
+            if (test.Result.Count > 0)
                 throw new ArgumentException("Project with the same name already exist.");
 
             var result = await _neo4j.Driver.ExecutableQuery(@"
-                CREATE (p:Project {name: $name, ecosystem: $ecosystem, createdAt: $createdAt, updatedAt = $updatedAt})
+                CREATE (p:Project {name: $name, ecosystem: $ecosystem, createdAt: $createdAt, updatedAt: $updatedAt})
                 RETURN p
                 ")
                 .WithParameters(new
                 {
-                    name = dto.name,
-                    ecosystem = dto.ecosystem,
+                    dto.name,
+                    dto.ecosystem,
                     createdAt = DateTime.Now,
                     updatedAt = DateTime.Now
                 })
@@ -60,15 +61,14 @@ namespace sda.Services
                 MATCH (p:Project {name: $name})
                 RETURN p
                 ")
-                .WithParameters(new { name = name })
+                .WithParameters(new { name })
                 .ExecuteAsync();
 
-            if (result == null)
+            if (result.Result.Count < 1)
                 throw new InvalidOperationException("Project doesnt exist.");
 
             var node = result.Result[0]["p"].As<INode>();
 
-            //INFO: ovo nece da radi ako je neki nod kreiran bez nekog od propertija
             var project = new Project
             {
                 name = node.Properties["name"].As<string>(),
@@ -79,6 +79,44 @@ namespace sda.Services
 
             return project;
         }
+
+        public async Task<IEnumerable<Project>> ReadProjects(int skip = 1, int take = 10)
+        {
+            if (skip < 1) skip = 1;
+            if (take < 1) take = 10;
+            if (take > 100) take = 100;
+
+            var result = await _neo4j.Driver.ExecutableQuery(@"
+                MATCH (p:Project)
+                RETURN p
+                ORDER BY p.name
+                SKIP $skip
+                LIMIT $limit
+                ")
+                .WithParameters(new { skip = (skip - 1) * take, limit = take })
+                .ExecuteAsync();
+
+            var countResult = await _neo4j.Driver.ExecutableQuery(@"
+                MATCH (p:Project)
+                RETURN count(p) AS total
+                ")
+                .ExecuteAsync();
+
+            var projects = result.Result.Select(r =>
+            {
+                var node = r["p"].As<INode>();
+                return new Project
+                {
+                    name = node.Properties["name"].As<string>(),
+                    ecosystem = node.Properties["ecosystem"].As<string>(),
+                    createdAt = node.Properties["createdAt"].As<DateTime>(),
+                    updatedAt = node.Properties["updatedAt"].As<DateTime>()
+                };
+            });
+
+            return projects;
+        }
+
         public async Task<Project> UpdateProject(CreateProjectDto dto)
         {
             if (String.IsNullOrWhiteSpace(dto.name))
@@ -87,23 +125,23 @@ namespace sda.Services
             if (String.IsNullOrWhiteSpace(dto.ecosystem))
                 throw new ArgumentException("Field \'ecosystem\' is required.");
 
-            var result = await _neo4j.Driver.ExecutableQuery(@"
-                MATCH (p:Project {name: $name, ecosystem: $ecosystem, updatedAt: $updatedAt)
+            var test = await _neo4j.Driver.ExecutableQuery(@"
+                MATCH (p:Project {name: $name, ecosystem: $ecosystem, updatedAt: $updatedAt})
                 SET p.name = $name, p.ecosystem = $ecosystem
                 RETURN p
                 ")
                 .WithParameters(new
                 {
-                    name = dto.name,
-                    ecosystem = dto.ecosystem,
-                    updateddAt = DateTime.Now
+                    dto.name,
+                    dto.ecosystem,
+                    updatedAt = DateTime.Now
                 })
                 .ExecuteAsync();
 
-            if (result == null)
+            if (test.Result.Count == 0)
                 throw new InvalidOperationException("Project doesnt exist.");
 
-            var node = result.Result[0]["p"].As<INode>();
+            var node = test.Result[0]["p"].As<INode>();
 
             var project = new Project
             {
@@ -115,5 +153,22 @@ namespace sda.Services
 
             return project;
         }
+
+        public async Task DeleteProject(string name)
+        {
+            if (String.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Field \'name\' is required");
+
+            var result = await _neo4j.Driver.ExecutableQuery(@"
+                MATCH (p:Project {name: $name})
+                DETACH DELETE p
+                ")
+                .WithParameters(new { name })
+                .ExecuteAsync();
+
+            if (result.Summary.Counters.NodesDeleted == 0)
+                throw new InvalidOperationException("Project doesnt exist.");
+        }
+        #endregion
     }
 }

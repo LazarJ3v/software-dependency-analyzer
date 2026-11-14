@@ -43,6 +43,20 @@ namespace sda.Controllers
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpGet("projects")]
+        public async Task<ActionResult> GetProjects([FromQuery] int skip, [FromQuery] int take)
+        {
+            try
+            {
+                var projects = await _projectService.ReadProjects(skip, take);
+                return Ok(projects);
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
         
         [HttpPut("project")]
         public async Task<ActionResult> PutProject([FromBody] CreateProjectDto dto)
@@ -55,6 +69,20 @@ namespace sda.Controllers
             catch(Exception e)
             {
                 return BadRequest(e.Message);
+            }
+        }
+
+        [HttpDelete("project/{name}")]
+        public async Task<ActionResult> DeleteProject(string name)
+        {
+            try
+            {
+                await _projectService.DeleteProject(name);
+                return Ok("Brisanje uspesno."); // eventualno promeniti hardkodirani tekst
+            }
+            catch(Exception e)
+            {
+                return BadRequest(e);
             }
         }
 

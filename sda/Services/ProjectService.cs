@@ -126,8 +126,8 @@ namespace sda.Services
                 throw new ArgumentException("Field \'ecosystem\' is required.");
 
             var test = await _neo4j.Driver.ExecutableQuery(@"
-                MATCH (p:Project {name: $name, ecosystem: $ecosystem, updatedAt: $updatedAt})
-                SET p.name = $name, p.ecosystem = $ecosystem
+                MATCH (p:Project {name: $name})
+                SET p.name = $name, p.ecosystem = $ecosystem, p.updatedAt = $updatedAt
                 RETURN p
                 ")
                 .WithParameters(new

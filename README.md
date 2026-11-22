@@ -1,39 +1,34 @@
-# Software Dependency Analyzer
+# Software Dependency Analyzer for NPM Projects
 
-A web application for analyzing software package dependencies and identifying potential security vulnerabilities using graph-based data modeling.
+Web aplikacija za analizu softverskih zavisnosti NPM projekata. Omogućava pregled direktnih i tranzitivnih zavisnosti, njihovih međusobnih odnosa, kao i analizu potencijalnih bezbednosnih rizika koji mogu uticati na projekat.
 
-## About the Project
+## Koji problem aplikacija rešava?
 
-Software Dependency Analyzer models relationships between software projects, packages, package versions, and known vulnerabilities. It uses Neo4j to represent dependencies as a graph, making it possible to explore direct and transitive dependencies and identify projects potentially affected by vulnerable packages.
+U savremenom razvoju softvera, NPM projekti često koriste veliki broj biblioteka, koje same mogu zavisiti od drugih biblioteka. Zbog toga je teško imati jasan pregled kompletne strukture zavisnosti i proceniti kako problem u jednoj biblioteci može uticati na ostatak projekta.
 
-This project is developed as part of the Advanced Databases course at the University of Electronic Engineering in Nis, Serbia.
+Aplikacija rešava ovaj problem analizom `package-lock.json` fajla, na osnovu kojeg identifikuje sve zavisnosti projekta i njihove međusobne veze.
 
-## Features
+Kroz intuitivan korisnički interfejs i interaktivni graf, korisniku se omogućava pregled strukture projekta, jednostavno pronalaženje konkretnih paketa i identifikacija potencijalnih bezbednosnih i drugih problema.
 
-- Analyze direct and transitive software dependencies.
-- Represent package relationships using a graph database.
-- Identify packages affected by known security vulnerabilities.
-- Trace dependency paths leading to vulnerable packages.
-- Find projects that depend on affected package versions.
-- Visualize dependency relationships.
-- Generate dependency analysis reports.
+## Funkcionalnosti
 
-## Technology Stack
+Aplikacija implementira sledeće funkcionalnosti:
 
-- **Backend:** C# and ASP.NET Core Web API
-- **Database:** Neo4j
-- **Vulnerability Data:** OSV API
+- **Analiza zavisnosti** – pronalaženje direktnih i tranzitivnih zavisnosti projekta.
+- **Dubina zavisnosti** – određivanje nivoa na kojem se određeni paket nalazi u hijerarhiji zavisnosti.
+- **Analiza uticaja ranjivosti** – identifikacija paketa koji mogu biti pogođeni bezbednosnom ranjivošću i analiza njenog uticaja na projekat.
+- **Detekcija duplikata** – pronalaženje različitih verzija istog paketa unutar projekta.
+- **Najkraći put do paketa** – pronalaženje najkraćeg puta kroz graf zavisnosti od korenskog projekta do odabranog paketa.
+- **Detekcija cikličnih zavisnosti** – identifikacija ciklusa u grafu zavisnosti.
+- **Provera kompatibilnosti licenci** – analiza licenci korišćenih biblioteka i potencijalnih problema sa njihovom kompatibilnošću.
+- **Interaktivni graf zavisnosti** – vizuelni prikaz strukture projekta sa mogućnošću interakcije i istraživanja pojedinačnih paketa.
 
-## Project Structure
+## Tehnologije
 
-```
-software-dependency-analyzer/
-├── sda/
-├── docs/
-└── README.md
-```
-- **sda** - software dependency analyzer API
-- **docs** - project documentations 
-- **README.md** - introduction to software dependency analyzer project
+## Arhitektura aplikacije
 
-*The directory structure will be updated as the project develops.*
+## Pokretanje projekta
+
+## Primeri korišćenja
+
+## Screenshots

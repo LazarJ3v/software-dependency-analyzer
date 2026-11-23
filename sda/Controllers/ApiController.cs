@@ -138,15 +138,34 @@ namespace sda.Controllers
         [HttpGet("vulnerability")]
         public async Task<ActionResult> ReadVulnerability([FromQuery] int skip, [FromQuery] int take)
         {
-                try { return Ok(await _vulnerabilityService.ReadVulnerabilities(skip, take)); }
-                catch (Exception e) { return BadRequest(e.Message); }
+            try { return Ok(await _vulnerabilityService.ReadVulnerabilities(skip, take)); }
+            catch (Exception e) { return BadRequest(e.Message); }
         }
 
         [HttpGet("analysis/vulnerable-paths")]
         public async Task<ActionResult> ReadVulnerablePaths([FromQuery] int skip, [FromQuery] int take)
         {
-                try { return Ok(await _analysisService.ReadVulnerablePaths(skip, take)); }
-                catch (Exception e) { return BadRequest(e.Message); }
+            try { return Ok(await _analysisService.ReadVulnerablePaths(skip, take)); }
+            catch (Exception e) { return BadRequest(e.Message); }
+        }
+
+        [HttpPost("project/test")]
+        public async Task<ActionResult> TestParse(IFormFile file)
+        {
+            try
+            {
+                if (file is null || file.Length == 0)
+                    return BadRequest("Fajl je obavezan.");
+
+                using var reader = new StreamReader(file.OpenReadStream());
+                var packages = PackageLockParser.TryParse(await reader.ReadToEndAsync());
+
+                return Content(packages.GetRawText(), "application/json");
+            }
+            catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
         }
     }
 }

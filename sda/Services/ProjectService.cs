@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Neo4j.Driver;
 using sda.DTOs;
 using sda.Models;
@@ -7,7 +8,12 @@ namespace sda.Services
     public class ProjectService
     {
         private readonly Neo4jService _neo4j;
-        public ProjectService(Neo4jService neo4j) => _neo4j = neo4j;
+        private readonly PackageService _package;
+        public ProjectService(Neo4jService neo4j, PackageService package)
+        {
+            _neo4j = neo4j;
+            _package = package;
+        }
         #region CRUD
         public async Task<Project> CreateProject(CreateProjectDto dto)
         {
@@ -170,5 +176,28 @@ namespace sda.Services
                 throw new InvalidOperationException("Project doesnt exist.");
         }
         #endregion
+
+        public async Task BuildGraph(CreateProjectDto dto, string json)
+        {
+            var project = await CreateProject(dto);
+
+            var packages = PackageLockParser.TryParse(json);
+
+            var directPackages = packages[""].dependencies;
+
+            if(directPackages is null || directPackages.Count == 0)
+                return;
+
+            foreach(var dp in directPackages!)
+            {
+                await _package.CreateDirectPackage(new CreateDirectPackageDto
+                {
+                    projectName = project.name,
+                    packageName = dp.Key,
+                    ecosystem = "npm",
+                    description = dp.Value
+                });
+            }
+        }
     }
 }

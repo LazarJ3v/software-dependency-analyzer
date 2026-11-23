@@ -27,6 +27,7 @@ namespace sda.Controllers
         }
 
         #region project
+        
         [HttpPost("project")]
         public async Task<IActionResult> PostProject
             ([FromBody] CreateProjectDto dto)
@@ -160,9 +161,29 @@ namespace sda.Controllers
                 using var reader = new StreamReader(file.OpenReadStream());
                 var packages = PackageLockParser.TryParse(await reader.ReadToEndAsync());
 
-                return Content(packages.GetRawText(), "application/json");
+                //return Content(packages.GetRawText(), "application/json");
+                return Ok(packages);
             }
             catch (ArgumentException e)
+            {
+                return BadRequest(e.Message);
+            }
+        }
+
+        [HttpPost("project/graph")]
+        public async Task<ActionResult> PostGraph(IFormFile file, [FromBody] CreateProjectDto dto)
+        {
+            try
+            {
+                if (file is null || file.Length == 0)
+                    return BadRequest("Fajl je obavezan.");
+
+                using var reader = new StreamReader(file.OpenReadStream());
+
+                await _projectService.BuildGraph(dto, await reader.ReadToEndAsync());
+                return Ok("Uspeh");
+            }
+            catch(Exception e)
             {
                 return BadRequest(e.Message);
             }

@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using sda.Models;
 
 namespace sda.Services
 {
@@ -27,7 +29,7 @@ namespace sda.Services
         //     }
         // }
 
-        public static JsonElement TryParse(string json)
+        public static Dictionary<string, PackageVersion> TryParse(string json)
         {
             JsonDocument doc;
             try { doc = JsonDocument.Parse(json); }
@@ -40,7 +42,12 @@ namespace sda.Services
                     throw new ArgumentException(
                         "Podrzan je samo package-lock.json lockfileVersion 2 i 3 (nedostaje 'packages').");
 
-                return packages.Clone();
+                //return packages.Clone();
+                var map = packages.Deserialize<Dictionary<string, PackageVersion>>();
+                if (map is null || map.Count == 0)
+                    throw new InvalidOperationException("Lista paketa je prazna.");
+
+                return map;
             }
         }
 

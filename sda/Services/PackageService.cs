@@ -1,6 +1,7 @@
 // Services/PackageService.cs
 using Neo4j.Driver;
 using sda.DTOs;
+using sda.Models;
 
 namespace sda.Services
 {
@@ -45,6 +46,26 @@ namespace sda.Services
                 .ExecuteAsync();
 
             return MapPackage(result.Result[0]["p"].As<INode>());
+        }
+
+        public async Task<PackageDto> CreateDirectPackage(CreateDirectPackageDto dto)
+        {
+            if (String.IsNullOrWhiteSpace(dto.projectName))
+                throw new ArgumentException("Field 'projectName' is required.");
+            if (String.IsNullOrWhiteSpace(dto.packageName))
+                throw new ArgumentException("Field 'packageName' is required.");
+            if (String.IsNullOrWhiteSpace(dto.ecosystem))
+                throw new ArgumentException("Field 'ecosystem' is required.");
+
+            var result = await _neo4j.Driver.ExecutableQuery(@"
+                MERGE (pr:Project {name: $projectName})-[DEPENDS_ON]->
+                    (pa:Package{name: $packageName, ecosystem: $ecosystem, description: $description})
+                RETURN pa
+                ")
+                .WithParameters(new {dto.projectName, dto.packageName, dto.ecosystem, dto.description})
+                .ExecuteAsync();
+
+            return MapPackage(result.Result[0]["pa"].As<INode>());
         }
 
         public async Task<PackageDto> ReadPackage(string ecosystem, string name)

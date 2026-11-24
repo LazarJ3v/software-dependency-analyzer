@@ -58,11 +58,13 @@ namespace sda.Services
                 throw new ArgumentException("Field 'ecosystem' is required.");
 
             var result = await _neo4j.Driver.ExecutableQuery(@"
-                MERGE (pr:Project {name: $projectName})-[DEPENDS_ON]->
-                    (pa:Package{name: $packageName, ecosystem: $ecosystem, description: $description})
+                MATCH (pr:Project {name: $projectName})
+                MERGE (pa:Package {name: $packageName, ecosystem: $ecosystem})
+                    ON CREATE SET pa.description = $description
+                MERGE (pr)-[:DEPENDS_ON]->(pa)
                 RETURN pa
                 ")
-                .WithParameters(new {dto.projectName, dto.packageName, dto.ecosystem, dto.description})
+                .WithParameters(new { dto.projectName, dto.packageName, dto.ecosystem, dto.description })
                 .ExecuteAsync();
 
             return MapPackage(result.Result[0]["pa"].As<INode>());

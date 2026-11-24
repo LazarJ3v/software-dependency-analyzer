@@ -10,6 +10,7 @@ namespace sda.Controllers
     public class ApiController : ControllerBase
     {
         private readonly ProjectService _projectService;
+        private readonly ProjectGraphService _projectGraphService;
         private readonly PackageService _packageService;
         private readonly VulnerabilityService _vulnerabilityService;
         private readonly AnalysisService _analysisService;
@@ -18,12 +19,14 @@ namespace sda.Controllers
             ProjectService projectService,
             PackageService packageService,
             VulnerabilityService vulnerabilityService,
-            AnalysisService analysisService)
+            AnalysisService analysisService,
+            ProjectGraphService projectGraphService)
         {
             _projectService = projectService;
             _packageService = packageService;
             _vulnerabilityService = vulnerabilityService;
             _analysisService = analysisService;
+            _projectGraphService = projectGraphService;
         }
 
         #region project
@@ -171,7 +174,8 @@ namespace sda.Controllers
         }
 
         [HttpPost("project/graph")]
-        public async Task<ActionResult> PostGraph(IFormFile file, [FromBody] CreateProjectDto dto)
+        [Consumes("multipart/form-data")]
+        public async Task<ActionResult> PostGraph(IFormFile file, [FromForm] CreateProjectDto dto)
         {
             try
             {
@@ -180,7 +184,7 @@ namespace sda.Controllers
 
                 using var reader = new StreamReader(file.OpenReadStream());
 
-                await _projectService.BuildGraph(dto, await reader.ReadToEndAsync());
+                await _projectGraphService.BuildGraph(dto, await reader.ReadToEndAsync());
                 return Ok("Uspeh");
             }
             catch(Exception e)

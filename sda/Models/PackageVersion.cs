@@ -11,5 +11,11 @@ namespace sda.Models
         [JsonPropertyName("optionalDependencies")] public IDictionary<string, string>? OptionalDependencies { get; set; }
         [JsonPropertyName("peerDependencies")] public IDictionary<string, string>? PeerDependencies { get; set; }
         [JsonPropertyName("devDependencies")] public IDictionary<string, string>? DevDependencies { get; set; }
+
+        public IEnumerable<string> DependencyNames() =>
+            (Dependencies?.Keys ?? Enumerable.Empty<string>())
+            .Concat(OptionalDependencies?.Keys ?? Enumerable.Empty<string>())
+            .Concat(PeerDependencies?.Keys ?? Enumerable.Empty<string>())
+            .Distinct();
     }
 }

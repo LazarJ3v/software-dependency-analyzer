@@ -163,9 +163,10 @@ namespace sda.Controllers
 
                 using var reader = new StreamReader(file.OpenReadStream());
                 var packages = PackageLockParser.TryParse(await reader.ReadToEndAsync());
+                var graph = PackageLockParser.BuildGraph(packages);
 
                 //return Content(packages.GetRawText(), "application/json");
-                return Ok(packages);
+                return Ok(graph);
             }
             catch (ArgumentException e)
             {

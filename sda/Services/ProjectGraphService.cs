@@ -17,7 +17,7 @@ namespace sda.Services
 
             var packages = PackageLockParser.TryParse(json);
 
-            var directPackages = packages[""].dependencies;
+            var directPackages = packages[""].Dependencies;
 
             if(directPackages is null || directPackages.Count == 0)
                 return;

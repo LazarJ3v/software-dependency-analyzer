@@ -1,10 +1,15 @@
-﻿namespace sda.Models
+﻿using System.Text.Json.Serialization;
+
+namespace sda.Models
 {
     public class PackageVersion
     {
-        public string? version { get; set; }
-        public string? license { get; set; }
-        public string? resolved { get; set; }
-        public IDictionary<string, string>? dependencies { get; set; }
+        [JsonPropertyName("version")]public string? Version { get; set; }
+        [JsonPropertyName("license")]public string? License { get; set; }
+        [JsonPropertyName("resolved")]public string? Resolved { get; set; }
+        [JsonPropertyName("dependencies")]public IDictionary<string, string>? Dependencies { get; set; }
+        [JsonPropertyName("optionalDependencies")] public IDictionary<string, string>? OptionalDependencies { get; set; }
+        [JsonPropertyName("peerDependencies")] public IDictionary<string, string>? PeerDependencies { get; set; }
+        [JsonPropertyName("devDependencies")] public IDictionary<string, string>? DevDependencies { get; set; }
     }
 }

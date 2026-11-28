@@ -18,9 +18,6 @@ namespace sda.Services
             if (String.IsNullOrWhiteSpace(dto.name))
                 throw new ArgumentException("Field \'name\' is required.");
 
-            if (String.IsNullOrWhiteSpace(dto.ecosystem))
-                throw new ArgumentException("Field \'ecosystem\' is required.");
-
             var test = await _neo4j.Driver.ExecutableQuery(@"
                 MATCH (p:Project {name: $name})
                 RETURN p
@@ -32,13 +29,12 @@ namespace sda.Services
                 throw new ArgumentException("Project with the same name already exist.");
 
             var result = await _neo4j.Driver.ExecutableQuery(@"
-                CREATE (p:Project {name: $name, ecosystem: $ecosystem, createdAt: $createdAt, updatedAt: $updatedAt})
+                CREATE (p:Project {name: $name, createdAt: $createdAt, updatedAt: $updatedAt})
                 RETURN p
                 ")
                 .WithParameters(new
                 {
                     dto.name,
-                    dto.ecosystem,
                     createdAt = DateTime.Now,
                     updatedAt = DateTime.Now
                 })
@@ -49,7 +45,6 @@ namespace sda.Services
             var project = new Project
             {
                 name = node.Properties["name"].As<string>(),
-                ecosystem = node.Properties["ecosystem"].As<string>(),
                 createdAt = node.Properties["createdAt"].As<DateTime>(),
                 updatedAt = node.Properties["updatedAt"].As<DateTime>()
             };
@@ -76,7 +71,6 @@ namespace sda.Services
             var project = new Project
             {
                 name = node.Properties["name"].As<string>(),
-                ecosystem = node.Properties["ecosystem"].As<string>(),
                 createdAt = node.Properties["createdAt"].As<DateTime>(),
                 updatedAt = node.Properties["updatedAt"].As<DateTime>()
             };
@@ -112,7 +106,6 @@ namespace sda.Services
                 return new Project
                 {
                     name = node.Properties["name"].As<string>(),
-                    ecosystem = node.Properties["ecosystem"].As<string>(),
                     createdAt = node.Properties["createdAt"].As<DateTime>(),
                     updatedAt = node.Properties["updatedAt"].As<DateTime>()
                 };
@@ -126,9 +119,6 @@ namespace sda.Services
             if (String.IsNullOrWhiteSpace(dto.name))
                 throw new ArgumentException("Field \'name\' is required.");
 
-            if (String.IsNullOrWhiteSpace(dto.ecosystem))
-                throw new ArgumentException("Field \'ecosystem\' is required.");
-
             var test = await _neo4j.Driver.ExecutableQuery(@"
                 MATCH (p:Project {name: $name})
                 SET p.name = $name, p.ecosystem = $ecosystem, p.updatedAt = $updatedAt
@@ -137,7 +127,6 @@ namespace sda.Services
                 .WithParameters(new
                 {
                     dto.name,
-                    dto.ecosystem,
                     updatedAt = DateTime.Now
                 })
                 .ExecuteAsync();
@@ -150,7 +139,6 @@ namespace sda.Services
             var project = new Project
             {
                 name = node.Properties["name"].As<string>(),
-                ecosystem = node.Properties["ecosystem"].As<string>(),
                 createdAt = node.Properties["createdAt"].As<DateTime>(),
                 updatedAt = node.Properties["updatedAt"].As<DateTime>()
             };

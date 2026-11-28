@@ -15,9 +15,7 @@ namespace sda.Services
             var props = node.Properties;
             return new PackageDto
             {
-                name = props.GetValueOrDefault("name")?.As<string>() ?? "",
-                ecosystem = props.GetValueOrDefault("ecosystem")?.As<string>() ?? "",
-                description = props.GetValueOrDefault("description")?.As<string>()
+                name = props.GetValueOrDefault("name")?.As<string>() ?? ""
             };
         }
 
@@ -25,58 +23,34 @@ namespace sda.Services
         {
             if (String.IsNullOrWhiteSpace(dto.name))
                 throw new ArgumentException("Field 'name' is required.");
-            if (String.IsNullOrWhiteSpace(dto.ecosystem))
-                throw new ArgumentException("Field 'ecosystem' is required.");
 
             var test = await _neo4j.Driver.ExecutableQuery(@"
-                MATCH (p:Package {name: $name, ecosystem: $ecosystem})
+                MATCH (p:Package {name: $name})
                 RETURN p
                 ")
-                .WithParameters(new { dto.name, dto.ecosystem })
+                .WithParameters(new { dto.name})
                 .ExecuteAsync();
 
             if (test.Result.Count > 0)
                 throw new ArgumentException("Package with the same name and ecosystem already exists.");
 
             var result = await _neo4j.Driver.ExecutableQuery(@"
-                CREATE (p:Package {name: $name, ecosystem: $ecosystem, description: $description})
+                CREATE (p:Package {name: $name})
                 RETURN p
                 ")
-                .WithParameters(new { dto.name, dto.ecosystem, dto.description })
+                .WithParameters(new { dto.name})
                 .ExecuteAsync();
 
             return MapPackage(result.Result[0]["p"].As<INode>());
         }
 
-        public async Task<PackageDto> CreateDirectPackage(CreateDirectPackageDto dto)
-        {
-            if (String.IsNullOrWhiteSpace(dto.projectName))
-                throw new ArgumentException("Field 'projectName' is required.");
-            if (String.IsNullOrWhiteSpace(dto.packageName))
-                throw new ArgumentException("Field 'packageName' is required.");
-            if (String.IsNullOrWhiteSpace(dto.ecosystem))
-                throw new ArgumentException("Field 'ecosystem' is required.");
-
-            var result = await _neo4j.Driver.ExecutableQuery(@"
-                MATCH (pr:Project {name: $projectName})
-                MERGE (pa:Package {name: $packageName, ecosystem: $ecosystem})
-                    ON CREATE SET pa.description = $description
-                MERGE (pr)-[:DEPENDS_ON]->(pa)
-                RETURN pa
-                ")
-                .WithParameters(new { dto.projectName, dto.packageName, dto.ecosystem, dto.description })
-                .ExecuteAsync();
-
-            return MapPackage(result.Result[0]["pa"].As<INode>());
-        }
-
         public async Task<PackageDto> ReadPackage(string ecosystem, string name)
         {
             var result = await _neo4j.Driver.ExecutableQuery(@"
-                MATCH (p:Package {name: $name, ecosystem: $ecosystem})
+                MATCH (p:Package {name: $name})
                 RETURN p
                 ")
-                .WithParameters(new { name, ecosystem })
+                .WithParameters(new { name })
                 .ExecuteAsync();
 
             if (result.Result.Count < 1)
@@ -94,7 +68,7 @@ namespace sda.Services
             var result = await _neo4j.Driver.ExecutableQuery(@"
                 MATCH (p:Package)
                 RETURN p
-                ORDER BY p.ecosystem, p.name
+                ORDER BY p.name
                 SKIP $skip
                 LIMIT $limit
                 ")
@@ -106,21 +80,20 @@ namespace sda.Services
                 var props = r["p"].As<INode>().Properties;
                 return new PackageDto
                 {
-                    name = props.GetValueOrDefault("name")?.As<string>() ?? "",
-                    ecosystem = props.GetValueOrDefault("ecosystem")?.As<string>() ?? "",
-                    description = props.GetValueOrDefault("description")?.As<string>()
+                    name = props.GetValueOrDefault("name")?.As<string>() ?? ""
                 };
             }).ToList();
         }
 
+        //WARNING: deprecated - diabolical function
         public async Task<PackageDto> UpdatePackage(string ecosystem, string name, CreatePackageDto dto)
         {
             var result = await _neo4j.Driver.ExecutableQuery(@"
-                MATCH (p:Package {name: $name, ecosystem: $ecosystem})
+                MATCH (p:Package {name: $name})
                 SET p.description = $description
                 RETURN p
                 ")
-                .WithParameters(new { name, ecosystem, dto.description })
+                .WithParameters(new { name })
                 .ExecuteAsync();
 
             if (result.Result.Count < 1)
